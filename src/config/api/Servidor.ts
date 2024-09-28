@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import morgan from "morgan";
 import apiSalaRuta from "../../app/salas/route/SalaRuta";
+import apiReservacionRuta from "../../app/reservaciones/route/ReservacionRuta";
 
 class Servidor {
     public app:express.Application;
@@ -10,6 +11,7 @@ class Servidor {
         this.app = express();
         this.cargarConfiguracion();
         this.exponerEndPoint();
+        this.configurarManejoErrores();
     }
     
     public cargarConfiguracion() :void {
@@ -23,11 +25,19 @@ class Servidor {
 
     public exponerEndPoint():void {
         this.app.use("/room",apiSalaRuta);
+        this.app.use("/reservation", apiReservacionRuta);
     }
 
-    public iniciar():void{
-        this.app.listen(this.app.get("PORT"),()=>{
-            console.log("Listo me fui", this.app.get("PORT"));
+    public configurarManejoErrores(): void {
+        this.app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+            console.error(err.stack);
+            res.status(500).json({ error: "Algo salió mal en el servidor." });
+        });
+    }
+
+    public iniciar(): void {
+        this.app.listen(this.app.get("PORT"), () => {
+            console.log(`Servidor corriendo en el puerto ${this.app.get("PORT")}`);
         });
     }
 }
