@@ -209,12 +209,7 @@ CREATE TABLE IF NOT EXISTS cine.Reservaciones (
     REFERENCES cine.Funciones (id_funcion)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
-  CONSTRAINT unique_persona_funcion UNIQUE (id_persona, id_funcion) -- Restricción única
 );
-
---ALTER TABLE cine.Reservaciones
---ADD CONSTRAINT unique_persona_funcion UNIQUE (id_persona, id_funcion);
-
 
 CREATE INDEX fk_reservaciones_personas1_idx ON cine.Reservaciones (id_persona);
 CREATE INDEX fk_reservaciones_funciones1_idx ON cine.Reservaciones (id_funcion);
@@ -306,7 +301,7 @@ CREATE TABLE IF NOT EXISTS cine.Sillas_En_Reservacion (
     ON UPDATE CASCADE,
   FOREIGN KEY (id_reservacion)
     REFERENCES cine.Reservaciones (id_reservacion)
-    ON DELETE RESTRICT
+    ON DELETE NO ACTION
     ON UPDATE CASCADE
 );
 
