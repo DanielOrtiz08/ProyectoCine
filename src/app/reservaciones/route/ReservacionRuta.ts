@@ -30,3 +30,13 @@ class ReservacionRuta {
 
 const reservacionRuta = new ReservacionRuta();
 export default reservacionRuta.apiRutaReservacion;
+
+/*
+Dejar el .bind() es apropiado en este caso. Al usar el .bind(), aseguras que el contexto de this dentro de los métodos del controlador
+ (como obtenerTodasReservaciones, crearReservacion, etc.) se mantenga correctamente atado al controlador original (reservacionControlador).
+  Esto es importante porque los métodos del controlador pueden necesitar acceso al contexto (this) para usar propiedades o métodos 
+  interno de la clase.
+
+Si no usas .bind(), y pasas las funciones directamente, podrías perder el contexto de this al ser llamadas por Express, lo que puede 
+generar errores cuando se intentan acceder a las propiedades del controlador.
+*/

@@ -8,60 +8,68 @@ class ReservacionControlador extends ReservacionDAO {
     public async paginarReservaciones(req: Request, res: Response): Promise<void> {
         // Desestructuración para obtener los valores de limite y offset
         const { limite = '10', offset = '0' } = req.query;
-    
+
         // Convertir a números y validar
         const limiteNum = parseInt(limite as string, 10);
         const offsetNum = parseInt(offset as string, 10);
-    
+
         // Validar los parámetros
         if (isNaN(limiteNum) || limiteNum <= 0) {
-            res.status(400).json({ 
-                error: "El parámetro 'limite' debe ser un número positivo.", 
-                recibido: limite 
+            res.status(400).json({
+                error: "El parámetro 'limite' debe ser un número positivo.",
+                recibido: limite
             });
             return;
         }
-    
+
         if (isNaN(offsetNum) || offsetNum < 0) {
-            res.status(400).json({ 
-                error: "El parámetro 'offset' debe ser un número igual o mayor a 0.", 
-                recibido: offset 
+            res.status(400).json({
+                error: "El parámetro 'offset' debe ser un número igual o mayor a 0.",
+                recibido: offset
             });
             return;
         }
-    
+
         try {
             // Llamar al método del DAO para la paginación
             const reservaciones = await ReservacionDAO.paginarReservaciones(limiteNum, offsetNum);
             res.status(200).json(reservaciones);
         } catch (error) {
-            res.status(500).json({ error: `Error al paginar las reservaciones: ${error}` });
+            res.status(500).json({ error: error });
         }
     }
-    
+
 
     public async crearReservacion(req: Request, res: Response): Promise<void> {
-        const { precio, idPersona, idFuncion } = req.body;
-        if (!precio || !idPersona || !idFuncion) {
-            res.status(400).json({ error: "Faltan parámetros en la solicitud." });
-            return;
+        try {
+            const { precio, idPersona, idFuncion } = req.body;
+            if (!precio || !idPersona || !idFuncion) {
+                res.status(400).json({ error: "Faltan parámetros en la solicitud." });
+                return;
+            }
+            const reservacion: Reservacion = new Reservacion(0, precio, idPersona, idFuncion);
+            const idReservacion = await ReservacionDAO.crearReservacion(reservacion);
+            if (idReservacion === null) {
+                res.status(409).json({ error: "La persona ya tiene una reserva para esta función." });
+            } else {
+                res.status(201).json({ mensaje: "Reservación creada con éxito", data: idReservacion });
+            }
+        } catch (error) {
+            res.status(500).json({ error: error });
         }
-        const reservacion: Reservacion = new Reservacion(0, precio, idPersona, idFuncion);
-
-        await ReservacionDAO.crearReservacion(reservacion, res);
     }
 
     public async obtenerTodasReservaciones(req: Request, res: Response): Promise<void> {
         try {
-            const todasReservaciones = await ReservacionDAO.obtenerTodasReservaciones(res);
+            const todasReservaciones = await ReservacionDAO.obtenerTodasReservaciones();
             res.status(200).json(todasReservaciones);
         } catch (error) {
-            res.status(500).json({ error: `Error al obtener todas las reservas: ${error}` });
+            res.status(500).json({ error: error });
         }
     }
 
     public async obtenerReservacionPorID(req: Request, res: Response): Promise<void> {
-        const { idReservacion } = req.params;
+        const idReservacion = req.params.idReservacion;
 
         // Validar que idReservacion sea un número
         if (isNaN(Number(idReservacion))) {
@@ -70,14 +78,14 @@ class ReservacionControlador extends ReservacionDAO {
         }
 
         try {
-            const reservacion = await ReservacionDAO.obtenerReservacionPorID(Number(idReservacion), res);
+            const reservacion = await ReservacionDAO.obtenerReservacionPorID(Number(idReservacion));
             if (reservacion) {
-                res.status(200).json(reservacion);
+                res.status(200).json({ data: reservacion });
             } else {
                 res.status(404).json({ error: "Reservación no encontrada." });
             }
         } catch (error) {
-            res.status(500).json({ error: `Error al obtener la reservación: ${error}` });
+            res.status(500).json({ error: error });
         }
     }
 
@@ -93,10 +101,10 @@ class ReservacionControlador extends ReservacionDAO {
         const reservacion: Reservacion = new Reservacion(0, precio, idPersona, idFuncion);
 
         try {
-            const resultado = await ReservacionDAO.actualizarReservacion(reservacion, res);
+            const resultado = await ReservacionDAO.actualizarReservacion(reservacion);
             res.status(resultado.status).json({ mensaje: resultado.message });
         } catch (error) {
-            res.status(500).json({ error: `Error al actualizar la reservación: ${error}` });
+            res.status(500).json({ error: error });
         }
     }
 
@@ -149,7 +157,7 @@ class ReservacionControlador extends ReservacionDAO {
             await ReservacionDAO.eliminarReservacion(idPersona, idFuncion);
             res.status(200).json({ mensaje: "Reservación eliminada con éxito" });
         } catch (error) {
-            res.status(500).json({ error: `Error al eliminar la reservación: ${error}` });
+            res.status(500).json({ error: error });
         }
     }
 
@@ -166,7 +174,7 @@ class ReservacionControlador extends ReservacionDAO {
             const cantidad = await ReservacionDAO.contarReservasPorFuncion(Number(idFuncion));
             res.status(200).json({ cantidad });
         } catch (error) {
-            res.status(500).json({ error: `Error al contar las reservas: ${error}` });
+            res.status(500).json({ error: error });
         }
     }
 
@@ -183,7 +191,7 @@ class ReservacionControlador extends ReservacionDAO {
             const sillas = await ReservacionDAO.obtenerSillasPorReservacion(Number(idReservacion));
             res.status(200).json(sillas);
         } catch (error) {
-            res.status(500).json({ error: `Error al obtener las sillas: ${error}` });
+            res.status(500).json({ error: error });
         }
     }
 
@@ -200,7 +208,7 @@ class ReservacionControlador extends ReservacionDAO {
             await ReservacionDAO.agregarSillasAReservacion(idSilla, idReservacion, estado);
             res.status(200).json({ mensaje: "Silla agregada a la reservación con éxito" });
         } catch (error) {
-            res.status(500).json({ error: `Error al agregar la silla a la reservación: ${error}` });
+            res.status(500).json({ error: error });
         }
     }
 
@@ -238,6 +246,39 @@ class ReservacionControlador extends ReservacionDAO {
         }
     }
 
+    public async obtenerProductosPorReservacion(req: Request, res: Response): Promise<void> {
+        const { id_reservacion } = req.params;
+      
+        // Validar que el parámetro id_reservacion sea un número
+        if (isNaN(Number(id_reservacion))) {
+          res.status(400).json({ error: "El ID de la reservación debe ser un número válido." });
+          return;
+        }
+      
+        try {
+          const productos = await ReservacionDAO.obtenerProductosPorReservacion(Number(id_reservacion));
+          res.status(200).json(productos);
+        } catch (error) {
+          res.status(500).json({ error: error });
+        }
+      }   
+
+      public async eliminarProductoDeReservacion(req: Request, res: Response): Promise<void> {
+        const { id_reservacion, id_producto } = req.params;
+      
+        // Validar que los parámetros sean números
+        if (isNaN(Number(id_reservacion)) || isNaN(Number(id_producto))) {
+          res.status(400).json({ error: "Los IDs de la reservación y del producto deben ser números válidos." });
+          return;
+        }
+      
+        try {
+          await ReservacionDAO.eliminarProductoDeReservacion(Number(id_reservacion), Number(id_producto));
+          res.status(200).json({ mensaje: "Producto eliminado de la reservación con éxito" });
+        } catch (error) {
+          res.status(500).json({ error: error });
+        }
+      } 
 
 }
 const reservacionControlador = new ReservacionControlador();
