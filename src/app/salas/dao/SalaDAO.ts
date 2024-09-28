@@ -80,7 +80,7 @@ class SalaDAO {
             if(existe) {
                 res.status(200).json({ actualizado: "ok" });
             } else {
-                res.status(400).json({ respuesta: "Compita ya existe" });
+                res.status(400).json({ respuesta: "Compita no existe" });
 
             }
         })

@@ -35,7 +35,7 @@ export const SQL_RESERVACIONES = {
     UPDATE: `
         UPDATE cine.Reservaciones
         SET precio = $1, id_persona = $2, id_funcion = $3
-        WHERE id_reservacion = $4;
+        WHERE id_persona = $2 AND id_funcion = $3;
     `,
 
     // Actualizar el precio de todas las reservaciones para una función
@@ -55,13 +55,19 @@ export const SQL_RESERVACIONES = {
     // Consulta para eliminar una reserva
     DELETE: `
         DELETE FROM cine.Reservaciones
-        WHERE id_reservacion = $1;
+        WHERE id_persona = $1 AND id_funcion = $2;
     `,
 
     // Consulta para contar cuántas reservas existen para una función
     COUNT_BY_FUNCION: `
         SELECT COUNT(*) as cantidad FROM cine.Reservaciones
         WHERE id_funcion = $1;
+    `,
+
+    // Consulta para contar cuántas reservas existen para una función
+    COUNT_BY_PERSONA: `
+        SELECT COUNT(*) as cantidad FROM cine.Reservaciones
+        WHERE id_persona = $1;
     `,
 
     // Consulta para obtener las sillas reservadas para una reserva específica
@@ -84,8 +90,8 @@ export const SQL_RESERVACIONES = {
 
     // Consulta para agregar productos a una reserva
     ADD_PRODUCTO_TO_RESERVACION: `
-        INSERT INTO cine.Productos_Por_Reservacion (id_pedido, id_producto, id_reservacion, precio_pedido)
-        VALUES ($1, $2, $3, $4);
+        INSERT INTO cine.Productos_Por_Reservacion (id_producto, id_reservacion, precio_pedido)
+        VALUES ($1, $2, $3);
     `,
 
     // Consulta para obtener los productos de una reservación

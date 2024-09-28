@@ -1,9 +1,10 @@
 import { Response } from "express";
 import { SQL_RESERVACIONES } from "../repository/sql_reservacion";
 import pool from "../../../config/connection/dbConnection";
+import Reservacion from "../entity/Reservacion";
 
 class ReservacionDAO {
-    // Paginación de reservaciones
+  // Paginación de reservaciones
   public static async paginarReservaciones(limite: number, offset: number): Promise<any[]> {
     try {
       const reservaciones = await pool.any(SQL_RESERVACIONES.PAGINATE_RESERVACIONES, [limite, offset]);
@@ -14,133 +15,144 @@ class ReservacionDAO {
   }
 
   // Método para crear una nueva reservación
-  public static async crearReservacion(precio: number, id_persona: number, id_funcion: number): Promise<number | null> {
+  public static async crearReservacion(reservacion: Reservacion, response: Response): Promise<number | null> {
     try {
       // Verificar si la reservación ya existe
-      const exists = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [id_persona, id_funcion]);
+      const exists = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [reservacion.idPersona, reservacion.idFuncion]);
       if (exists) {
+        response.status(400);
         throw new Error("La persona ya tiene una reserva para esta función.");
       }
 
       // Insertar la nueva reservación
-      const nuevaReservacion = await pool.one(SQL_RESERVACIONES.ADD, [precio, id_persona, id_funcion]);
-      
+      const nuevaReservacion = await pool.one(SQL_RESERVACIONES.ADD, [reservacion.precio, reservacion.idPersona, reservacion.idFuncion]);
+
       // Devolver el id de la nueva reservación
-      return nuevaReservacion.id_reservacion;
+      response.status(201).json({ message: 'Reservación creada exitosamente.', nuevaReservacion });
+      return nuevaReservacion.idReservacion;
 
     } catch (error) {
+      response.status(400);
       throw new Error(`Error al crear la reserva: ${error}`);
     }
   }
 
-  public static async obtenerTodasReservaciones(): Promise<any[]> {
+  public static async obtenerTodasReservaciones(response: Response): Promise<any[]> {
     try {
       const todasReservaciones = await pool.manyOrNone(SQL_RESERVACIONES.GET_ALL);
       return todasReservaciones;
     } catch (error) {
+      response.status(400);
       throw new Error(`Error al obtener todas las reservas: ${error}`);
     }
   }
 
-  public static async obtenerReservacionPorID(id_reservacion: number): Promise<any | null> {
+  public static async obtenerReservacionPorID(idReservacion: number, response: Response): Promise<any | null> {
     try {
-      const reservacion = await pool.oneOrNone(SQL_RESERVACIONES.GET_BY_ID, [id_reservacion]);
+      const reservacion = await pool.oneOrNone(SQL_RESERVACIONES.GET_BY_ID, [idReservacion]);
       return reservacion;
     } catch (error) {
-      throw new Error(`Error al obtener la reserva con ID ${id_reservacion}: ${error}`);
+      response.status(400);
+      throw new Error(`Error al obtener la reserva con ID ${idReservacion}: ${error}`);
     }
   }
 
-  public static async actualizarReservacion(datos: { precio: number, id_persona: number, id_funcion: number, id_reservacion: number }): Promise<any> {
+  public static async actualizarReservacion(reservacion: Reservacion, response: Response): Promise<any> {
     try {
       // Verificar si la persona ya tiene una reserva para la misma función
-      const exists = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [datos.id_persona, datos.id_funcion]);
-      
-      if (exists && exists.id_reservacion !== datos.id_reservacion) {
-        throw new Error("La persona ya tiene una reserva para esta función.");
+      const exists = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [reservacion.idPersona, reservacion.idFuncion]);
+
+      if (!exists) {
+        return { status: 200, message: "No existe la reservación" };
       }
-  
       // Actualizar la reserva
-      await pool.none(SQL_RESERVACIONES.UPDATE, [datos.precio, datos.id_persona, datos.id_funcion, datos.id_reservacion]);
-  
-      return { mensaje: "Reservación actualizada con éxito" };
+      await pool.none(SQL_RESERVACIONES.UPDATE, [reservacion.precio, reservacion.idPersona, reservacion.idFuncion]);
+      return { status: 200, message: "Reservación actualizada con éxito" };
     } catch (error) {
+      response.status(400);
       throw new Error(`Error al actualizar la reserva: ${error}`);
     }
-  }  
-  
+  }
+
 
   // Actualizar precio de todas las reservas para una función
-  public static async actualizarPrecioPorFuncion(precio: number, id_funcion: number): Promise<void> {
+  public static async actualizarPrecioPorFuncion(precio: number, idFuncion: number): Promise<void> {
     try {
-      await pool.none(SQL_RESERVACIONES.UPDATE_PRECIO_FUNCION, [precio, id_funcion]);
+      await pool.none(SQL_RESERVACIONES.UPDATE_PRECIO_FUNCION, [precio, idFuncion]);
     } catch (error) {
-      throw new Error(`Error actualizando el precio para la función ${id_funcion}: ${error}`);
+      throw new Error(`Error actualizando el precio para la función ${idFuncion}: ${error}`);
     }
   }
 
   // Actualizar precio de todas las reservas para una persona
-  public static async actualizarPrecioPorPersona(precio: number, id_persona: number): Promise<void> {
+  public static async actualizarPrecioPorPersona(precio: number, idPersona: number): Promise<void> {
     try {
-      await pool.none(SQL_RESERVACIONES.UPDATE_PRECIO_PERSONA, [precio, id_persona]);
+      await pool.none(SQL_RESERVACIONES.UPDATE_PRECIO_PERSONA, [precio, idPersona]);
     } catch (error) {
-      throw new Error(`Error actualizando el precio para la persona ${id_persona}: ${error}`);
+      throw new Error(`Error actualizando el precio para la persona ${idPersona}: ${error}`);
     }
   }
 
-  public static async eliminarReservacion(id_reservacion: number): Promise<any> {
+  public static async eliminarReservacion(idPersona: number, idFuncion: number): Promise<void> {
     try {
       // Eliminar la reserva por ID
-      await pool.none(SQL_RESERVACIONES.DELETE, [id_reservacion]);
-  
-      return { mensaje: "Reservación eliminada con éxito" };
+      await pool.none(SQL_RESERVACIONES.DELETE, [idPersona, idFuncion]);
     } catch (error) {
       throw new Error(`Error al eliminar la reserva: ${error}`);
     }
   }
 
-  public static async contarReservasPorFuncion(id_funcion: number): Promise<number> {
+  public static async contarReservasPorFuncion(idFuncion: number): Promise<number> {
     try {
       // Realiza la consulta para contar las reservas para una función específica
-      const { cantidad } = await pool.one(SQL_RESERVACIONES.COUNT_BY_FUNCION, [id_funcion]);
-  
+      const { cantidad } = await pool.one(SQL_RESERVACIONES.COUNT_BY_FUNCION, [idFuncion]);
       return cantidad;
     } catch (error) {
       throw new Error(`Error al contar las reservas para la función: ${error}`);
     }
   }
-    
-  public static async obtenerSillasPorReservacion(id_reservacion: number): Promise<any[]> {
+
+  public static async contarReservasPorPersona(idPersona: number, response: Response): Promise<number> {
+    try {
+      // Realiza la consulta para contar las reservas para una función específica
+      const { cantidad } = await pool.one(SQL_RESERVACIONES.COUNT_BY_PERSONA, [idPersona]);
+
+      return cantidad;
+    } catch (error) {
+      response.status(400);
+      throw new Error(`Error al contar las reservas para la función: ${error}`);
+    }
+  }
+
+  public static async obtenerSillasPorReservacion(idReservacion: number): Promise<any[]> {
     try {
       // Realiza la consulta para obtener las sillas asociadas a una reserva
-      const sillas = await pool.any(SQL_RESERVACIONES.GET_SILLAS_BY_RESERVACION, [id_reservacion]);
-  
+      const sillas = await pool.any(SQL_RESERVACIONES.GET_SILLAS_BY_RESERVACION, [idReservacion]);
       return sillas;
     } catch (error) {
       throw new Error(`Error al obtener las sillas reservadas: ${error}`);
     }
   }
 
-  public static async agregarSillasAReservacion(id_silla: number, id_reservacion: number, estado: string): Promise<void> {
+  public static async agregarSillasAReservacion(idSilla: number, idReservacion: number, estado: string): Promise<void> {
     try {
       // Realiza la consulta para agregar una silla a la reservación
-      await pool.none(SQL_RESERVACIONES.ADD_SILLAS_TO_RESERVACION, [id_silla, id_reservacion, estado]);
+      await pool.none(SQL_RESERVACIONES.ADD_SILLAS_TO_RESERVACION, [idSilla, idReservacion, estado]);
     } catch (error) {
       throw new Error(`Error al agregar la silla a la reservación: ${error}`);
     }
   }
 
-  public static async eliminarSillasDeReservacion<T extends number | string>(id_reservacion: T): Promise<void> {
+  public static async eliminarSillasDeReservacion(idReservacion: number): Promise<void> {
     try {
       // Realiza la consulta para eliminar todas las sillas de la reservación
-      await pool.none(SQL_RESERVACIONES.DELETE_SILLAS_FROM_RESERVACION, [id_reservacion]);
+      await pool.none(SQL_RESERVACIONES.DELETE_SILLAS_FROM_RESERVACION, [idReservacion]);
     } catch (error) {
       throw new Error(`Error al eliminar las sillas de la reservación: ${error}`);
     }
   }
 
   public static async agregarProductoAReservacion(
-    id_pedido: string,
     id_producto: number,
     id_reservacion: number,
     precio_pedido: number
@@ -148,16 +160,13 @@ class ReservacionDAO {
     try {
       // Realiza la consulta para agregar un producto a la reservación
       await pool.none(SQL_RESERVACIONES.ADD_PRODUCTO_TO_RESERVACION, [
-        id_pedido,
-        id_producto,
-        id_reservacion,
-        precio_pedido
+        id_producto, id_reservacion, precio_pedido
       ]);
     } catch (error) {
       throw new Error(`Error al agregar el producto a la reservación: ${error}`);
     }
   }
-  
+
   public static async obtenerProductosPorReservacion(id_reservacion: number): Promise<any[]> {
     try {
       // Realiza la consulta para obtener los productos de la reservación
@@ -180,7 +189,7 @@ class ReservacionDAO {
     } catch (error) {
       throw new Error(`Error al eliminar el producto de la reservación: ${error}`);
     }
-  }  
+  }
 
 }
 export default ReservacionDAO;

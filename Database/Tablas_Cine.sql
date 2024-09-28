@@ -270,7 +270,7 @@ CREATE INDEX fk_productos_has_cines_productos1_idx ON cine.Confiterias (id_produ
 -- Table cine.Productos_Por_Reservacion
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS cine.Productos_Por_Reservacion (
-  id_pedido VARCHAR(45) NOT NULL PRIMARY KEY,
+  id_pedido SERIAL PRIMARY KEY,
   id_producto INT NOT NULL,
   id_reservacion INT NOT NULL,
   precio_pedido REAL NOT NULL,
