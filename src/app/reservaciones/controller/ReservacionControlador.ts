@@ -6,14 +6,11 @@ class ReservacionControlador extends ReservacionDAO {
 
     // Controlador para la paginación de reservaciones
     public async paginarReservaciones(req: Request, res: Response): Promise<void> {
-        // Desestructuración para obtener los valores de limite y offset
         const { limite = '10', offset = '0' } = req.query;
 
-        // Convertir a números y validar
         const limiteNum = parseInt(limite as string, 10);
         const offsetNum = parseInt(offset as string, 10);
 
-        // Validar los parámetros
         if (isNaN(limiteNum) || limiteNum <= 0) {
             res.status(400).json({
                 error: "El parámetro 'limite' debe ser un número positivo.",
@@ -31,8 +28,11 @@ class ReservacionControlador extends ReservacionDAO {
         }
 
         try {
-            // Llamar al método del DAO para la paginación
             const reservaciones = await ReservacionDAO.paginarReservaciones(limiteNum, offsetNum);
+            if (reservaciones.length === 0) {
+                res.status(404).json({ mensaje: "No se encontraron reservaciones." });
+                return;
+            }
             res.status(200).json(reservaciones);
         } catch (error) {
             res.status(500).json({ error: error });
@@ -71,7 +71,6 @@ class ReservacionControlador extends ReservacionDAO {
     public async obtenerReservacionPorID(req: Request, res: Response): Promise<void> {
         const idReservacion = req.params.idReservacion;
 
-        // Validar que idReservacion sea un número
         if (isNaN(Number(idReservacion))) {
             res.status(400).json({ error: "El ID de la reservación debe ser un número válido." });
             return;
@@ -92,7 +91,6 @@ class ReservacionControlador extends ReservacionDAO {
     public async actualizarReservacion(req: Request, res: Response): Promise<void> {
         const { precio, idPersona, idFuncion } = req.body;
 
-        // Validar que los parámetros estén presentes
         if (!precio || !idPersona || !idFuncion) {
             res.status(400).json({ error: "Faltan parámetros en la solicitud." });
             return;
@@ -112,7 +110,6 @@ class ReservacionControlador extends ReservacionDAO {
     public async actualizarPrecioPorFuncion(req: Request, res: Response): Promise<void> {
         const { precio, idFuncion } = req.body;
 
-        // Validar parámetros
         if (!precio || !idFuncion) {
             res.status(400).json({ error: "Faltan parámetros en la solicitud." });
             return;
@@ -130,7 +127,6 @@ class ReservacionControlador extends ReservacionDAO {
     public async actualizarPrecioPorPersona(req: Request, res: Response): Promise<void> {
         const { precio, idPersona } = req.body;
 
-        // Validar parámetros
         if (!precio || !idPersona) {
             res.status(400).json({ error: "Faltan parámetros en la solicitud." });
             return;
@@ -147,7 +143,6 @@ class ReservacionControlador extends ReservacionDAO {
     public async eliminarReservacion(req: Request, res: Response): Promise<void> {
         const { idPersona, idFuncion } = req.body;
 
-        // Validar que los parámetros estén presentes
         if (!idPersona || !idFuncion) {
             res.status(400).json({ error: "Faltan parámetros en la solicitud." });
             return;
@@ -164,7 +159,6 @@ class ReservacionControlador extends ReservacionDAO {
     public async contarReservasPorFuncion(req: Request, res: Response): Promise<void> {
         const { idFuncion } = req.params;
 
-        // Validar que el parámetro idFuncion sea un número
         if (isNaN(Number(idFuncion))) {
             res.status(400).json({ error: "El ID de la función debe ser un número válido." });
             return;
@@ -181,7 +175,6 @@ class ReservacionControlador extends ReservacionDAO {
     public async obtenerSillasPorReservacion(req: Request, res: Response): Promise<void> {
         const { idReservacion } = req.params;
 
-        // Validar que el parámetro idReservacion sea un número
         if (isNaN(Number(idReservacion))) {
             res.status(400).json({ error: "El ID de la reservación debe ser un número válido." });
             return;
@@ -196,16 +189,19 @@ class ReservacionControlador extends ReservacionDAO {
     }
 
     public async agregarSillasAReservacion(req: Request, res: Response): Promise<void> {
-        const { idSilla, idReservacion, estado } = req.body;
+        const { idReservacion, idSilla, estado } = req.body;
 
-        // Validar que los parámetros estén presentes
         if (!idSilla || !idReservacion || !estado) {
             res.status(400).json({ error: "Faltan parámetros en la solicitud." });
             return;
         }
+        if (isNaN(Number(idSilla)) || isNaN(Number(idReservacion))) {
+            res.status(400).json({ error: "Los parámetros deben ser números válidos." });
+            return;
+        }
 
         try {
-            await ReservacionDAO.agregarSillasAReservacion(idSilla, idReservacion, estado);
+            await ReservacionDAO.agregarSillasAReservacion(idReservacion, idSilla, estado);
             res.status(200).json({ mensaje: "Silla agregada a la reservación con éxito" });
         } catch (error) {
             res.status(500).json({ error: error });
@@ -213,16 +209,15 @@ class ReservacionControlador extends ReservacionDAO {
     }
 
     public async eliminarSillasDeReservacion(req: Request, res: Response): Promise<void> {
-        const { idReservacion } = req.params;
+        const { idSilla, idReservacion } = req.params;
 
-        // Validar que el parámetro idReservacion sea un número
-        if (isNaN(Number(idReservacion))) {
-            res.status(400).json({ error: "El ID de la reservación debe ser un número válido." });
+        if (isNaN(Number(idReservacion)) || isNaN(Number(idSilla))) {
+            res.status(400).json({ error: "El ID de la reservación e ID de la silla debe ser un número válido." });
             return;
         }
 
         try {
-            await ReservacionDAO.eliminarSillasDeReservacion(Number(idReservacion));
+            await ReservacionDAO.eliminarSillasDeReservacion(Number(idSilla), Number(idReservacion));
             res.status(200).json({ mensaje: "Sillas eliminadas de la reservación con éxito" });
         } catch (error) {
             res.status(500).json({ error: error });
@@ -230,26 +225,30 @@ class ReservacionControlador extends ReservacionDAO {
     }
 
     public async agregarProductoAReservacion(req: Request, res: Response): Promise<void> {
-        const { id_producto, id_reservacion, precio_pedido } = req.body;
-
-        // Validar que los parámetros estén presentes
-        if (!id_producto || !id_reservacion || !precio_pedido) {
+        const { idProducto, idReservacion, precioPedido, cantidad } = req.body;
+    
+        if (!idProducto || !idReservacion || !precioPedido || !cantidad) {
             res.status(400).json({ error: "Faltan parámetros en la solicitud." });
             return;
         }
-
+        if (isNaN(Number(idProducto)) || isNaN(Number(idReservacion)) || isNaN(Number(precioPedido)) || isNaN(Number(cantidad))) {
+            res.status(400).json({ error: "Los parámetros deben ser números válidos." });
+            return;
+        }
+    
         try {
-            await ReservacionDAO.agregarProductoAReservacion(id_producto, id_reservacion, precio_pedido);
+            await ReservacionDAO.agregarProductoAReservacion(idProducto, idReservacion, precioPedido, cantidad);
             res.status(200).json({ mensaje: "Producto agregado a la reservación con éxito" });
         } catch (error) {
-            res.status(500).json({ error: error });
+            console.error("Error al agregar producto a la reservación:", error);
+            res.status(500).json({ error: error.message || "Error interno del servidor" });
         }
     }
+    
 
     public async obtenerProductosPorReservacion(req: Request, res: Response): Promise<void> {
         const { id_reservacion } = req.params;
       
-        // Validar que el parámetro id_reservacion sea un número
         if (isNaN(Number(id_reservacion))) {
           res.status(400).json({ error: "El ID de la reservación debe ser un número válido." });
           return;
@@ -266,7 +265,6 @@ class ReservacionControlador extends ReservacionDAO {
       public async eliminarProductoDeReservacion(req: Request, res: Response): Promise<void> {
         const { id_reservacion, id_producto } = req.params;
       
-        // Validar que los parámetros sean números
         if (isNaN(Number(id_reservacion)) || isNaN(Number(id_producto))) {
           res.status(400).json({ error: "Los IDs de la reservación y del producto deben ser números válidos." });
           return;

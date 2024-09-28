@@ -2,6 +2,7 @@ export const SQL_RESERVACIONES = {
     // Paginación: obtener reservaciones con límite y offset
     PAGINATE_RESERVACIONES: `
         SELECT * FROM cine.Reservaciones
+        ORDER BY id_reservacion ASC
         LIMIT $1 OFFSET $2
     `,
 
@@ -78,20 +79,20 @@ export const SQL_RESERVACIONES = {
 
     // Consulta para agregar sillas a una reservación
     ADD_SILLAS_TO_RESERVACION: `
-        INSERT INTO cine.Sillas_En_Reservacion (id_silla, id_reservacion, estado)
+        INSERT INTO cine.Sillas_En_Reservacion (id_reservacion, id_silla, estado)
         VALUES ($1, $2, $3);
     `,
 
     // Consulta para eliminar las sillas de una reserva específica
     DELETE_SILLAS_FROM_RESERVACION: `
         DELETE FROM cine.Sillas_En_Reservacion
-        WHERE id_reservacion = $1;
+        WHERE id_silla = $1 AND id_reservacion = $2 ;
     `,
 
     // Consulta para agregar productos a una reserva
     ADD_PRODUCTO_TO_RESERVACION: `
-        INSERT INTO cine.Productos_Por_Reservacion (id_producto, id_reservacion, precio_pedido)
-        VALUES ($1, $2, $3);
+        INSERT INTO cine.Productos_Por_Reservacion (id_producto, id_reservacion, precio_pedido, cantidad)
+        VALUES ($1, $2, $3, $4);
     `,
 
     // Consulta para obtener los productos de una reservación

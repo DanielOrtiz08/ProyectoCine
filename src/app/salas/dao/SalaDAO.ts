@@ -73,7 +73,7 @@ class SalaDAO {
             if(salasEncontradas.cantidad == 0) {
                 return { existe: false}
             }
-            let respuBase = await consulta.none(SQL_SALAS.UPDATE, [datos.idSala, datos.formatoSala, datos.capacidadSala, datos.idCine]);
+            await consulta.none(SQL_SALAS.UPDATE, [datos.idSala, datos.formatoSala, datos.capacidadSala, datos.idCine]);
             return { existe: true };
         })
         .then(({ existe }) => {
@@ -90,4 +90,4 @@ class SalaDAO {
         });
     }
 }
-export default SalaDAO;
+export default SalaDAO; 
