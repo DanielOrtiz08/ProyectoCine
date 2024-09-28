@@ -303,7 +303,7 @@ CREATE TABLE IF NOT EXISTS cine.Sillas_En_Reservacion (
     ON UPDATE CASCADE,
   FOREIGN KEY (id_reservacion)
     REFERENCES cine.Reservaciones (id_reservacion)
-    ON DELETE NO RESTRICT
+    ON DELETE RESTRICT
     ON UPDATE CASCADE
 );
 
