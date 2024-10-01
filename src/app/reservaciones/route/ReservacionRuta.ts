@@ -17,14 +17,14 @@ class ReservacionRuta {
         this.apiRutaReservacion.delete("/delete", reservacionControlador.eliminarReservacion.bind(reservacionControlador));
         
         // Rutas adicionales
-        this.apiRutaReservacion.get("/page/:value", reservacionControlador.paginarReservaciones.bind(reservacionControlador));
+        this.apiRutaReservacion.get("/paginate", reservacionControlador.paginarReservaciones.bind(reservacionControlador));
         this.apiRutaReservacion.put("/price/function", reservacionControlador.actualizarPrecioPorFuncion.bind(reservacionControlador));
         this.apiRutaReservacion.put("/price/person", reservacionControlador.actualizarPrecioPorPersona.bind(reservacionControlador));
         this.apiRutaReservacion.get("/count/:idFuncion", reservacionControlador.contarReservasPorFuncion.bind(reservacionControlador));
         this.apiRutaReservacion.get("/seats/:idReservacion", reservacionControlador.obtenerSillasPorReservacion.bind(reservacionControlador));
         this.apiRutaReservacion.post("/seats/add", reservacionControlador.agregarSillasAReservacion.bind(reservacionControlador));
         this.apiRutaReservacion.delete("/seats/:idReservacion/:idSilla", reservacionControlador.eliminarSillasDeReservacion.bind(reservacionControlador));
-        this.apiRutaReservacion.post("/product/add", reservacionControlador.agregarProductoAReservacion.bind(reservacionControlador));
+        this.apiRutaReservacion.post("/products/add", reservacionControlador.agregarProductoAReservacion.bind(reservacionControlador));
         this.apiRutaReservacion.get("/products/:id_reservacion", reservacionControlador.obtenerProductosPorReservacion.bind(reservacionControlador));
         this.apiRutaReservacion.delete("/products/:id_reservacion/:id_producto", reservacionControlador.eliminarProductoDeReservacion.bind(reservacionControlador));
     }
