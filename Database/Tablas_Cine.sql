@@ -209,7 +209,7 @@ CREATE TABLE IF NOT EXISTS cine.Reservaciones (
   FOREIGN KEY (id_funcion)
     REFERENCES cine.Funciones (id_funcion)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE
+    ON UPDATE CASCADE,
   CONSTRAINT unique_persona_funcion UNIQUE (id_persona, id_funcion)
 );
 
