@@ -11,11 +11,13 @@ class PersonaRuta {
     }
 
     private misRutas(): void {
-        this.apiRutaPersona.get("/getallPersona", personaControlador.cogeTuPersona);
+        this.apiRutaPersona.get("/paginacionPersona", personaControlador.paginacionPersona);
         this.apiRutaPersona.post("/addPersona", personaControlador.cogeTuPersona);
-        this.apiRutaPersona.delete("/deletePersona/:idPersona", personaControlador.borraTuPersona);
+        this.apiRutaPersona.delete("/deletePersona/:numeroDocumento", personaControlador.borraTuPersona);
         this.apiRutaPersona.put("/updatePersona", personaControlador.actualizaPersona);
+        this.apiRutaPersona.put("/updateCargo", personaControlador.cambioDeCargosPersona);
+        
     }
 }
-const personaRuta= new PersonaRuta();
-export default personaRuta.apiRutaPersona;
+const apiPersonaRuta= new PersonaRuta();
+export default apiPersonaRuta.apiRutaPersona;

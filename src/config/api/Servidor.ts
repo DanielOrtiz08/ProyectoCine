@@ -4,6 +4,8 @@ import morgan from "morgan";
 import apiSalaRuta from "../../app/salas/route/SalaRuta";
 import apiReservacionRuta from "../../app/reservaciones/route/ReservacionRuta";
 import apiRutaFuncion from "../../app/funciones/route/FuncionRuta";
+import apiPersonaRuta from "../../app/personas/route/PersonaRuta"
+
 
 class Servidor {
     public app:express.Application;
@@ -28,6 +30,8 @@ class Servidor {
         this.app.use("/room",apiSalaRuta);
         this.app.use("/reservation", apiReservacionRuta);
         this.app.use("/funciones",apiRutaFuncion);
+        this.app.use("/people",apiPersonaRuta);
+
     }
 
     public configurarManejoErrores(): void {

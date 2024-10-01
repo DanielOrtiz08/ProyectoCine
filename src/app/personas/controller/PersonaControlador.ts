@@ -1,6 +1,5 @@
 import { Response, Request } from "express";
 import PersonaDao from "../dao/PersonaDao";
-import Sala from "../entity/Persona";
 import Persona from "../entity/Persona";
 
 class PersonaControlador extends PersonaDao {
@@ -12,10 +11,11 @@ class PersonaControlador extends PersonaDao {
     }
 
     public cogeTuPersona(req:Request, res:Response): void {
-        const objCubi: Persona = new Sala (0, "", "", new Date(), 0, 0, 0, "", "", "");
-        objCubi.nombrePersona = req.body.nombrePersona;
+        const objCubi: Persona = new Persona (0,0, "", "", new Date(), 0, 0, 0, "", "", "");
+        objCubi.numeroDocumento=req.body.numeroDocumento;
+        objCubi.nombresPersona = req.body.nombresPersona;
         objCubi.apellidosPersona = req.body.apellidosPersona;
-        objCubi.fechaNacimientoPersona = req.body.fecha_nacimiento_persona;
+        objCubi.fechaNacimientoPersona = req.body.fechaNacimientoPersona;
         objCubi.idCargo = req.body.idCargo;
         objCubi.idUbicacion = req.body.idUbicacion;
         objCubi.idPlan = req.body.idPlan;
@@ -26,21 +26,21 @@ class PersonaControlador extends PersonaDao {
     }
 
     public borraTuPersona(req: Request, res: Response): void {
-        if (isNaN(Number(req.params.idPersona))) {
-            res.status(400).json({ respuesta: "Y el código mi vale?" });
+        if (isNaN(Number(req.params.numeroDocumento))) {
+            res.status(400).json({ respuesta: "Y el numero de documento mi vale?" });
         } else {
-            const codiguito = Number(req.params.idPersona);
-            const objCubi: Persona = new Persona (codiguito,"", "", new Date(), 0, 0, 0, "", "", "");
+            const codiguito = Number(req.params.numeroDocumento);
+            const objCubi: Persona = new Persona (0,codiguito,"", "", new Date(), 0, 0, 0, "", "", "");
             PersonaDao.borreloYa(objCubi, res);
         }
     }
 
     public actualizaPersona(req: Request, res: Response): void {
-        const objCubi: Sala = new Sala(0, "", "", new Date(), 0, 0, 0, "", "", "");
-        objCubi.idPersona = req.body.idPersona;
-        objCubi.nombrePersona = req.body.nombrePersona;
+        const objCubi: Persona = new Persona(0,0, "", "", new Date(), 0, 0, 0, "", "", "");
+        objCubi.numeroDocumento=req.body.numeroDocumento;
+        objCubi.nombresPersona = req.body.nombresPersona;
         objCubi.apellidosPersona = req.body.apellidosPersona;
-        objCubi.fechaNacimientoPersona = req.body.fecha_nacimiento_persona;
+        objCubi.fechaNacimientoPersona = req.body.fechaNacimientoPersona;
         objCubi.idCargo = req.body.idCargo;
         objCubi.idUbicacion = req.body.idUbicacion;
         objCubi.idPlan = req.body.idPlan;
@@ -49,6 +49,38 @@ class PersonaControlador extends PersonaDao {
         objCubi.contraseniaPersona = req.body.contraseniaPersona;
         PersonaDao.actualiceloYa(objCubi, res);
     }
+
+    public cambioDeCargosPersona(req: Request, res: Response): void {
+        // Obtenemos los nombres de los cargos desde el cuerpo de la petición
+        const nombreCargoActual = req.body.nombreCargoActual; // El nombre del cargo que se quiere cambiar 
+        const nombreCargoNuevo = req.body.nombreCargoNuevo;   // El nombre del nuevo cargo 
+    
+        // Validamos que ambos nombres de cargos hayan sido enviados
+        if (!nombreCargoActual || !nombreCargoNuevo) {
+            res.status(400).json({ message: "Faltan parámetros: nombreCargoActual y/o nombreCargoNuevo" });
+            return;
+        }
+    
+        // Llamamos al DAO para realizar el update masivo
+        PersonaDao.updateMasivoCargos(nombreCargoActual, nombreCargoNuevo, res);
+    }
+
+    public paginacionPersona(req: Request, res: Response): void {
+        const limit = parseInt(req.body.limit, 10); 
+        const offset = parseInt(req.body.offset, 10);
+    
+        // Validamos que ambos hayan sido enviados
+        if (isNaN(limit) || isNaN(offset)) {
+            res.status(400).json({ message: "Los parámetros limit y offset deben ser números válidos" });
+            return;
+        }
+    
+        PersonaDao.paginarPersonas(limit, offset, res);
+    }
+    
+    
+    
+    
 }
 const personaControlador = new PersonaControlador();
 export default personaControlador;

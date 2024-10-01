@@ -1,6 +1,7 @@
 class Persona {
     public idPersona: number;
-    public nombrePersona: string;
+    public numeroDocumento: number;
+    public nombresPersona: string;
     public apellidosPersona: string;              // apellidos_persona
     public fechaNacimientoPersona: Date;          // fecha_nacimiento_persona
     public idCargo: number;                       // id_cargo
@@ -12,7 +13,8 @@ class Persona {
 
     constructor(
         idPersona: number,
-        nombrePersona: string,
+        numeroDocumento: number,
+        nombresPersona: string,
         apellidosPersona: string,
         fechaNacimientoPersona: Date,
         idCargo: number,
@@ -23,7 +25,8 @@ class Persona {
         contraseniaPersona: string
     ) {
         this.idPersona = idPersona;
-        this.nombrePersona = nombrePersona;
+        this.numeroDocumento=numeroDocumento;
+        this.nombresPersona = nombresPersona;
         this.apellidosPersona = apellidosPersona;
         this.fechaNacimientoPersona = fechaNacimientoPersona;
         this.idCargo = idCargo;

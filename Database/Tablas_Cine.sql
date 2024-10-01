@@ -166,6 +166,7 @@ CREATE TABLE IF NOT EXISTS cine.Planes (
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS cine.Personas (
   id_persona SERIAL PRIMARY KEY,
+  numero_documento  INT NOT NULL,
   nombres_persona VARCHAR(45) NOT NULL,
   apellidos_persona VARCHAR(45) NOT NULL,
   fecha_nacimiento_persona DATE NOT NULL,
