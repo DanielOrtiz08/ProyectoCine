@@ -1,4 +1,4 @@
-/*import { Response, Request } from "express";
+import { Response, Request } from "express";
 import ReservacionDAO from "../dao/ReservacionDAO";
 import Reservacion from "../entity/Reservacion";
 
@@ -239,7 +239,7 @@ class ReservacionControlador extends ReservacionDAO {
         try {
             await ReservacionDAO.agregarProductoAReservacion(idProducto, idReservacion, precioPedido, cantidad);
             res.status(200).json({ mensaje: "Producto agregado a la reservación con éxito" });
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error al agregar producto a la reservación:", error);
             res.status(500).json({ error: error.message || "Error interno del servidor" });
         }
@@ -280,4 +280,4 @@ class ReservacionControlador extends ReservacionDAO {
 
 }
 const reservacionControlador = new ReservacionControlador();
-export default reservacionControlador;*/
+export default reservacionControlador;

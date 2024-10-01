@@ -928,9 +928,9 @@ DECLARE
     base_date DATE := '1990-01-01';
 BEGIN
     WHILE i <= 100 LOOP
-        INSERT INTO cine.Personas (nombres_persona, apellidos_persona, fecha_nacimiento_persona, id_cargo, id_ubicacion, id_plan, celular, email_persona, contrasenia_persona)
+        INSERT INTO cine.Personas (numero_documento, nombres_persona, apellidos_persona, fecha_nacimiento_persona, id_cargo, id_ubicacion, id_plan, celular, email_persona, contrasenia_persona)
         VALUES
-        (concat('Nombre', i), concat('Apellido', i), base_date + (i - 1) * interval '1 day', i, i, i, concat('555-', lpad(i::text, 4, '0')), concat('email', i, '@example.com'), concat('password', i));
+        (100000+i, concat('Nombre', i), concat('Apellido', i), base_date + (i - 1) * interval '1 day', i, i, i, concat('555-', lpad(i::text, 4, '0')), concat('email', i, '@example.com'), concat('password', i));
         
         i := i + 1;
     END LOOP;
