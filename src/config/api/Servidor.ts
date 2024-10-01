@@ -3,6 +3,7 @@ import express from "express";
 import morgan from "morgan";
 import apiSalaRuta from "../../app/salas/route/SalaRuta";
 import apiReservacionRuta from "../../app/reservaciones/route/ReservacionRuta";
+import apiRutaFuncion from "../../app/funciones/route/FuncionRuta";
 
 class Servidor {
     public app:express.Application;
@@ -26,6 +27,7 @@ class Servidor {
     public exponerEndPoint():void {
         this.app.use("/room",apiSalaRuta);
         this.app.use("/reservation", apiReservacionRuta);
+        this.app.use("/funciones",apiRutaFuncion);
     }
 
     public configurarManejoErrores(): void {
