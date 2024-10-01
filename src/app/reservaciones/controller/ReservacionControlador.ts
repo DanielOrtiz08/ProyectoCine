@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+/*import { Response, Request } from "express";
 import ReservacionDAO from "../dao/ReservacionDAO";
 import Reservacion from "../entity/Reservacion";
 
@@ -280,4 +280,4 @@ class ReservacionControlador extends ReservacionDAO {
 
 }
 const reservacionControlador = new ReservacionControlador();
-export default reservacionControlador;
+export default reservacionControlador;*/
