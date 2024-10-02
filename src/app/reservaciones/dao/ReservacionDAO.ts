@@ -17,8 +17,8 @@ class ReservacionDAO {
   // Método para crear una nueva reservación
   public static async crearReservacion(reservacion: Reservacion): Promise<number | null> {
     try {
-      const exists = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [reservacion.idPersona, reservacion.idFuncion]);
-      if (exists) {
+      const existe = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [reservacion.idPersona, reservacion.idFuncion]);
+      if (existe.cantidad > 0) {
         return null;
       }
 
@@ -51,9 +51,9 @@ class ReservacionDAO {
 
   public static async actualizarReservacion(reservacion: Reservacion): Promise<any> {
     try {
-      const exists = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [reservacion.idPersona, reservacion.idFuncion]);
+      const existe = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [reservacion.idPersona, reservacion.idFuncion]);
 
-      if (!exists) {
+      if (existe.cantidad == 0) {
         return { status: 200, message: "No existe la reservación" };
       }
       await pool.none(SQL_RESERVACIONES.UPDATE, [reservacion.precio, reservacion.idPersona, reservacion.idFuncion]);
@@ -84,7 +84,7 @@ class ReservacionDAO {
 
   public static async eliminarReservacion(idPersona: number, idFuncion: number): Promise<void> {
     try {
-      await pool.none(SQL_RESERVACIONES.DELETE, [idPersona, idFuncion]);
+      await pool.none(SQL_RESERVACIONES.DELETE_BY_PERSONA_AND_FUNCTION, [idPersona, idFuncion]);
     } catch (error) {
       throw new Error(`Error al eliminar la reserva: ${error}`);
     }
@@ -135,7 +135,7 @@ class ReservacionDAO {
     }
   }
 
-  public static async agregarProductoAReservacion(idProducto: number, idReservacion: number,precioPedido: number, cantidad: number): Promise<void> {
+  public static async agregarProductoAReservacion(idProducto: number, idReservacion: number, precioPedido: number, cantidad: number): Promise<void> {
     try {
       await pool.none(SQL_RESERVACIONES.ADD_PRODUCTO_TO_RESERVACION, [idProducto, idReservacion, precioPedido, cantidad]);
     } catch (error) {
@@ -160,5 +160,52 @@ class ReservacionDAO {
     }
   }
 
+  public static async actualizarTodosLosPrecios(precio: number): Promise<void> {
+    try {
+      await pool.none(SQL_RESERVACIONES.UPDATE_PRICE, [precio]);
+    } catch (error) {
+      throw new Error(`Error al actualizar el producto: ${error}`);
+    }
+  }
+
+
+  public static async eliminarReservasPorFuncion(idFuncion: number): Promise<any> {
+    const resultados = [];
+    const errores = [];
+    try {
+      const reservas: any[] = await pool.manyOrNone(SQL_RESERVACIONES.SELECT_RESEVATIONS_BY_FUNCTION, [idFuncion]);
+      if (reservas.length == 0) {
+        throw new Error("No se encontró la reserva");
+      }
+
+      for (const reserva of reservas) {
+        try {
+          let existe = await pool.one(SQL_RESERVACIONES.CHECK_IF_HAS_CHAIRS, [reserva.idReservacion]);
+          resultados.push({ id_reservacion: reserva.idReservacion, referencias_en_sillas: existe.cantidad });
+
+          if (existe.cantidad == 0) {
+            existe = await pool.one(SQL_RESERVACIONES.CHECK_IF_HAS_PRODUCTS, [reserva.idReservacion]);
+            resultados.push({ id_reservacion: reserva.idReservacion, referencias_en_productos: existe.cantidad });
+          }
+
+          if (existe.cantidad > 0) {
+            throw new Error(`La reservación ${reserva.idReservacion} ya está referenciada en otra tabla`);
+          } else {
+            await pool.none(SQL_RESERVACIONES.DELETE, [reserva.idReservacion]);
+          }
+        } catch (innerError: any) {
+          errores.push(`Error procesando la reserva ${reserva.idReservacion}: ${innerError.message}`);
+        }
+      }
+
+      return { resultados, errores };
+    } catch (error: any) {
+      throw new Error(`Error al intentar eliminar las reservas de la función ${idFuncion}: ${error.message}`);
+    }
+  }
+
 }
+
+
+
 export default ReservacionDAO;

@@ -25,8 +25,10 @@ class ReservacionRuta {
         this.apiRutaReservacion.post("/seats/add", reservacionControlador.agregarSillasAReservacion.bind(reservacionControlador));
         this.apiRutaReservacion.delete("/seats/:idReservacion/:idSilla", reservacionControlador.eliminarSillasDeReservacion.bind(reservacionControlador));
         this.apiRutaReservacion.post("/products/add", reservacionControlador.agregarProductoAReservacion.bind(reservacionControlador));
-        this.apiRutaReservacion.get("/products/:id_reservacion", reservacionControlador.obtenerProductosPorReservacion.bind(reservacionControlador));
-        this.apiRutaReservacion.delete("/products/:id_reservacion/:id_producto", reservacionControlador.eliminarProductoDeReservacion.bind(reservacionControlador));
+        this.apiRutaReservacion.get("/products/:idReservacion", reservacionControlador.obtenerProductosPorReservacion.bind(reservacionControlador));
+        this.apiRutaReservacion.delete("/products/:idReservacion/:idProducto", reservacionControlador.eliminarProductoDeReservacion.bind(reservacionControlador));
+        this.apiRutaReservacion.put("/price/:precio", reservacionControlador.actualizarTodosLosPrecios.bind(reservacionControlador));
+        this.apiRutaReservacion.delete("/function/:idFuncion", reservacionControlador.eliminarReservasPorFuncion.bind(reservacionControlador));
     }
     
 }

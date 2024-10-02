@@ -8,7 +8,7 @@ export const SQL_RESERVACIONES = {
 
     // Verifica si la reserva ya existe
     CHECK_IF_EXISTS: `
-        SELECT 1 
+        SELECT COUNT(*) as cantidad
         FROM cine.Reservaciones 
         WHERE id_persona = $1 
         AND id_funcion = $2
@@ -54,7 +54,7 @@ export const SQL_RESERVACIONES = {
     `,
 
     // Consulta para eliminar una reserva
-    DELETE: `
+    DELETE_BY_PERSONA_AND_FUNCTION: `
         DELETE FROM cine.Reservaciones
         WHERE id_persona = $1 AND id_funcion = $2;
     `,
@@ -106,4 +106,37 @@ export const SQL_RESERVACIONES = {
         DELETE FROM cine.Productos_Por_Reservacion
         WHERE id_reservacion = $1 AND id_producto = $2;
     `,
+
+    // Consulta para actualizar el precio de todos las reservas
+    UPDATE_PRICE: `
+        UPDATE cine.Reservaciones
+        SET precio = $1
+    `,
+
+    // Consulta para obtener reservas por funcion
+    SELECT_RESEVATIONS_BY_FUNCTION: `
+        SELECT id_reservacion
+        FROM cine.Reservaciones
+        WHERE id_funcion = $1
+    `,
+
+    // Verifica si la reserva se encuentra en la tabla sillas por reservacion
+    CHECK_IF_HAS_CHAIRS: `
+        SELECT COUNT(*) as cantidad
+        FROM cine.Sillas_En_Reservacion 
+        WHERE id_reservacion = $1
+    `,
+
+    // Verifica si la reserva se encuentra en la tabla sillas por reservacion
+    CHECK_IF_HAS_PRODUCTS: `
+        SELECT COUNT(*) as cantidad
+        FROM cine.Productos_Por_Reservacion 
+        WHERE id_reservacion = $1
+    `,
+    // Consulta para eliminar una reserva
+    DELETE: `
+    DELETE FROM cine.Reservaciones
+    WHERE id_reservacion = $1;
+    `
+    
 };
