@@ -17,19 +17,24 @@ class ReservacionDAO {
   // Método para crear una nueva reservación
   public static async crearReservacion(reservacion: Reservacion): Promise<number | null> {
     try {
-      const existe = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [reservacion.idPersona, reservacion.idFuncion]);
-      if (existe.cantidad > 0) {
-        return null;
-      }
+        const existe = await pool.oneOrNone(SQL_RESERVACIONES.CHECK_IF_EXISTS, [reservacion.idPersona, reservacion.idFuncion]);
 
-      const nuevaReservacion = await pool.one(SQL_RESERVACIONES.ADD, [reservacion.precio, reservacion.idPersona, reservacion.idFuncion]);
+        // Asegúrate de manejar correctamente el caso donde no hay resultado
+        const cantidad = existe ? parseInt(existe.cantidad, 10) : 0;
+        if (cantidad > 0) {
+            return null; // Ya existe una reserva
+        }
 
-      return nuevaReservacion.id_reservacion;
+        // Inserta la nueva reservación y retorna el ID generado
+        const nuevaReservacion = await pool.one(SQL_RESERVACIONES.ADD, [reservacion.precio, reservacion.idPersona, reservacion.idFuncion]);
+
+        return nuevaReservacion.idReservacion;
 
     } catch (error) {
-      throw new Error(`Error al crear la reserva: ${error}`);
+        throw new Error(`Error al crear la reserva: ${error}`);
     }
-  }
+}
+
 
   public static async obtenerTodasReservaciones(): Promise<any[]> {
     try {
@@ -171,34 +176,35 @@ class ReservacionDAO {
 
   public static async eliminarReservasPorFuncion(idFuncion: number): Promise<any> {
     const resultados = [];
-    const errores = [];
+    const salidas = [];
     try {
       const reservas: any[] = await pool.manyOrNone(SQL_RESERVACIONES.SELECT_RESEVATIONS_BY_FUNCTION, [idFuncion]);
       if (reservas.length == 0) {
-        throw new Error("No se encontró la reserva");
+        throw new Error("No se encontró ninguna reservacion asociada a la función");
       }
 
       for (const reserva of reservas) {
         try {
           let existe = await pool.one(SQL_RESERVACIONES.CHECK_IF_HAS_CHAIRS, [reserva.idReservacion]);
-          resultados.push({ id_reservacion: reserva.idReservacion, referencias_en_sillas: existe.cantidad });
+          resultados.push({ idReservacion: reserva.idReservacion, referenciasEnSillas: existe.cantidad });
 
           if (existe.cantidad == 0) {
             existe = await pool.one(SQL_RESERVACIONES.CHECK_IF_HAS_PRODUCTS, [reserva.idReservacion]);
-            resultados.push({ id_reservacion: reserva.idReservacion, referencias_en_productos: existe.cantidad });
           }
+          resultados.push({ idReservacion: reserva.idReservacion, referenciasEnProductos: existe.cantidad });
 
           if (existe.cantidad > 0) {
             throw new Error(`La reservación ${reserva.idReservacion} ya está referenciada en otra tabla`);
           } else {
             await pool.none(SQL_RESERVACIONES.DELETE, [reserva.idReservacion]);
+            salidas.push(`Reserva ${reserva.idReservacion} eliminada correctamenta`);
           }
         } catch (innerError: any) {
-          errores.push(`Error procesando la reserva ${reserva.idReservacion}: ${innerError.message}`);
+          salidas.push(` ${innerError.message}`);
         }
       }
 
-      return { resultados, errores };
+      return { resultados, salidas };
     } catch (error: any) {
       throw new Error(`Error al intentar eliminar las reservas de la función ${idFuncion}: ${error.message}`);
     }

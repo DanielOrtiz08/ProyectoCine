@@ -8,10 +8,10 @@ export const SQL_RESERVACIONES = {
 
     // Verifica si la reserva ya existe
     CHECK_IF_EXISTS: `
-        SELECT COUNT(*) as cantidad
+        SELECT COUNT(*)::INTEGER as cantidad
         FROM cine.Reservaciones 
         WHERE id_persona = $1 
-        AND id_funcion = $2
+        AND id_funcion = $2;
     `,
 
     // Consulta para crear una nueva reserva
@@ -115,10 +115,11 @@ export const SQL_RESERVACIONES = {
 
     // Consulta para obtener reservas por funcion
     SELECT_RESEVATIONS_BY_FUNCTION: `
-        SELECT id_reservacion
+        SELECT DISTINCT id_reservacion
         FROM cine.Reservaciones
         WHERE id_funcion = $1
     `,
+
 
     // Verifica si la reserva se encuentra en la tabla sillas por reservacion
     CHECK_IF_HAS_CHAIRS: `

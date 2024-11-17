@@ -16,6 +16,9 @@ class ReservacionControlador extends ReservacionDAO {
             return;
         }
 
+        console.log('desde el back ', 'limite:', limiteNum, 'offset:', offsetNum);
+
+
         if (isNaN(offsetNum) || offsetNum < 0) {
             res.status(400).json({ error: "El parámetro 'offset' debe ser un número igual o mayor a 0." });
             return;
@@ -28,6 +31,8 @@ class ReservacionControlador extends ReservacionDAO {
                 return;
             }
             res.status(200).json(reservaciones);
+            console.log('limite:', limiteNum, 'offset:', offsetNum);
+            console.log(reservaciones);
         } catch (error: any) {
             res.status(400).json({ error: error.message });
         }
@@ -41,17 +46,21 @@ class ReservacionControlador extends ReservacionDAO {
                 res.status(400).json({ error: "Faltan parámetros en la solicitud." });
                 return;
             }
+    
             const reservacion: Reservacion = new Reservacion(0, precio, idPersona, idFuncion);
             const idReservacion = await ReservacionDAO.crearReservacion(reservacion);
+    
             if (idReservacion === null) {
                 res.status(409).json({ error: "La persona ya tiene una reserva para esta función." });
             } else {
                 res.status(201).json({ mensaje: "Reservación creada con éxito", data: idReservacion });
             }
         } catch (error: any) {
+            console.error("Error en crearReservacion:", error);
             res.status(400).json({ error: error.message });
         }
     }
+    
 
     public async obtenerTodasReservaciones(req: Request, res: Response): Promise<void> {
         try {
@@ -298,10 +307,10 @@ class ReservacionControlador extends ReservacionDAO {
         }
 
         try {
-            const { resultados, errores } = await ReservacionDAO.eliminarReservasPorFuncion(idFuncion);
+            const { resultados, salidas } = await ReservacionDAO.eliminarReservasPorFuncion(idFuncion);
 
-            if (errores.length > 0) {
-                return res.status(207).json({ mensaje: "Se procesaron las reservas, pero ocurrieron algunos errores", resultados, errores });
+            if (salidas.length > 0) {
+                return res.status(207).json({ mensaje: "Se procesaron las reservas", resultados, salidas });
             }
 
             return res.status(200).json({ mensaje: "Reservas eliminadas correctamente", resultados });
